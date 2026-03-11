@@ -187,8 +187,7 @@ export function calculate(inputs: FormInputs): CalculationResults {
 
   const netInstallationCost = Math.max(0, installationGrossCost - vatSaving - subsidyAmount);
 
-  // 10. Payback period
-  const paybackYears = annualSavings > 0 ? netInstallationCost / annualSavings : 99;
+  // 10. Payback period — computed after chartData below
 
   // 11. CO₂ (HP only uses grid electricity after solar self-consumption)
   const currentCO2KgPerYear = (annualGasKwh * GAS_CO2_G_PER_KWH) / 1000;
@@ -227,6 +226,17 @@ export function calculate(inputs: FormInputs): CalculationResults {
     solarSaving_ *= (1 + ELECTRICITY_PRICE_INFLATION);
     cumulativeGas += gasPrice_ + surchargeCost;
     cumulativeHP += elecCost_ - solarSaving_;
+  }
+
+  // 10 (continued). Payback — interpolated from actual chart crossover
+  let paybackYears = 99;
+  for (let i = 1; i < chartData.length; i++) {
+    if (chartData[i].hp <= chartData[i].gas) {
+      const diffPrev = chartData[i - 1].hp - chartData[i - 1].gas; // positive
+      const diffCurr = chartData[i].hp - chartData[i].gas;         // ≤ 0
+      paybackYears = (i - 1) + diffPrev / (diffPrev - diffCurr);
+      break;
+    }
   }
 
   // 13. Lifetime net savings (gas cumulative - HP cumulative at year 20)
