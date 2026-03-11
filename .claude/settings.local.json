@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.facq.be)",
+      "WebFetch(domain:www.vlaanderen.be)",
+      "WebFetch(domain:ecospherehome.be)",
+      "WebFetch(domain:publications.jrc.ec.europa.eu)",
+      "WebFetch(domain:en.new-heating.com)",
+      "Bash(npm create:*)",
+      "Bash(npm init:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(curl -s http://localhost:5176/ | grep -o '<title>[^<]*</title>')"
+    ]
+  }
+}
