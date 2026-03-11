@@ -76,3 +76,21 @@ export const HEAT_PUMP_LIFESPAN_YEARS = 20;
 // Solar panel yield (Belgium average)
 export const SOLAR_YIELD_KWH_PER_KWP = 950; // kWh/kWp/year
 export const SOLAR_SELF_CONSUMPTION_RATE = 0.35; // 35% of yield used directly (free)
+
+// Heat pump sizing
+// Full load hours: how many hours/year the HP would run at full capacity to cover annual demand
+// Poorly insulated homes have high peaks but fewer full-load hours; well-insulated homes run longer at low power
+export const FULL_LOAD_HOURS: Record<string, number> = {
+  poor:      1400,
+  moderate:  1700,
+  good:      2000,
+  excellent: 2200,
+};
+
+// Design heat loss per m² at Belgian design conditions (outdoor -8°C, indoor 21°C)
+export const HEAT_LOSS_W_PER_M2: Record<string, number> = {
+  poor:      100,
+  moderate:   70,
+  good:        50,
+  excellent:   30,
+};

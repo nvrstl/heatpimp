@@ -17,6 +17,8 @@ import {
   GREEN_GAS_SURCHARGE_MAX_PER_M3,
   SOLAR_YIELD_KWH_PER_KWP,
   SOLAR_SELF_CONSUMPTION_RATE,
+  FULL_LOAD_HOURS,
+  HEAT_LOSS_W_PER_M2,
 } from './constants';
 
 export type InsulationLevel = 'poor' | 'moderate' | 'good' | 'excellent';
@@ -92,6 +94,9 @@ export interface CalculationResults {
   // Solar
   solarFreeKwhYear: number;   // kWh/year covered for free by solar self-consumption
   solarAnnualSaving: number;  // € saved per year thanks to solar
+
+  // Heat pump sizing
+  requiredPowerKw: number;    // recommended HP capacity (kW), average of demand- and area-based methods
 }
 
 export interface ChartDataPoint {
@@ -196,7 +201,7 @@ export function calculate(inputs: FormInputs): CalculationResults {
   let cumulativeGas = 0;
   let cumulativeHP = netInstallationCost; // HP starts with installation cost
   let gasPrice_ = currentAnnualGasCost;
-  let elecCost_ = hpAnnualElecCost;
+  let elecCost_ = hpAnnualElecKwh * electricityPrice; // gross, solar deducted separately in loop
 
   const currentYear = new Date().getFullYear();
   const annualM3 = annualGasKwh / GAS_KWH_PER_M3; // fixed physical volume
@@ -227,6 +232,14 @@ export function calculate(inputs: FormInputs): CalculationResults {
   // 13. Lifetime net savings (gas cumulative - HP cumulative at year 20)
   const lifetimeSavings = chartData[HEAT_PUMP_LIFESPAN_YEARS].gas - chartData[HEAT_PUMP_LIFESPAN_YEARS].hp;
 
+  // 14. Required heat pump power (combined method)
+  // Method 1: from annual heat demand ÷ full load hours
+  const powerMethod1Kw = annualHeatDemandKwh / FULL_LOAD_HOURS[insulation];
+  // Method 3: design heat loss rule of thumb (W/m² × house size)
+  const powerMethod3Kw = (HEAT_LOSS_W_PER_M2[insulation] * houseSize) / 1000;
+  // Average both methods, round to nearest 0.5 kW
+  const requiredPowerKw = Math.round(((powerMethod1Kw + powerMethod3Kw) / 2) * 2) / 2;
+
   return {
     annualHeatDemandKwh,
     currentAnnualGasCost,
@@ -250,5 +263,6 @@ export function calculate(inputs: FormInputs): CalculationResults {
     greenGasSurchargeExtraCost20y,
     solarFreeKwhYear,
     solarAnnualSaving,
+    requiredPowerKw,
   };
 }
